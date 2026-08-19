@@ -4549,6 +4549,8 @@ body.is-loading{overflow:hidden}
   .orbit__ring,.orbit__node{animation:none !important}
   .cur,.cur-dot{display:none}
 }
+.cur:not(.pack__price .cur),.cur-dot{display:none !important}
+.hero-x__spot{display:none !important}
 </style>
 <script type="application/ld+json">
 {
@@ -5546,6 +5548,9 @@ body.is-loading{overflow:hidden}
 
   const $  = (s, c = document) => c.querySelector(s);
   const $$ = (s, c = document) => [...c.querySelectorAll(s)];
+  document.querySelectorAll('.cur, .cur-dot').forEach(el => {
+    if (!el.closest('.pack__price')) el.remove();
+  });
 
   /* ---------- 1. Sticky header + scroll progress ---------- */
   const header   = $('#header');
@@ -6029,47 +6034,7 @@ body.is-loading{overflow:hidden}
     }, 130);
   })();
 
-  /* ---------- 2. CUSTOM CURSOR ---------- */
-  (() => {
-    if (!FINE || REDUCED) return;
-    const ring = document.createElement('div'); ring.className = 'cur';
-    ring.innerHTML = '<span class="cur__label"></span>';
-    const dot = document.createElement('div'); dot.className = 'cur-dot';
-    document.body.append(ring, dot);
-    const label = $('.cur__label', ring);
-    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
-
-    let cursorFrame = 0;
-    addEventListener('pointermove', e => {
-      mx = e.clientX; my = e.clientY;
-      dot.style.transform = `translate3d(${mx - 3}px,${my - 3}px,0)`;
-      if (!ring.classList.contains('is-ready')) { ring.classList.add('is-ready'); dot.classList.add('is-ready'); }
-      if (!cursorFrame) cursorFrame = requestAnimationFrame(loop);
-    }, { passive: true });
-    addEventListener('pointerdown', () => ring.style.scale = '.85');
-    addEventListener('pointerup', () => ring.style.scale = '1');
-    document.addEventListener('mouseleave', () => ring.classList.add('is-hidden'));
-    document.addEventListener('mouseenter', () => ring.classList.remove('is-hidden'));
-
-    const loop = () => {
-      rx = lerp(rx, mx, 0.18); ry = lerp(ry, my, 0.18);
-      ring.style.transform = `translate3d(${rx - 19}px,${ry - 19}px,0)`;
-      cursorFrame = Math.abs(rx - mx) + Math.abs(ry - my) > .2 ? requestAnimationFrame(loop) : 0;
-    };
-
-    const bind = () => $$('[data-cursor]').forEach(el => {
-      if (el.dataset.cursorBound) return;
-      el.dataset.cursorBound = '1';
-      el.addEventListener('pointerenter', () => {
-        ring.classList.add('is-active');
-        if (label) label.textContent = el.dataset.cursor || '';
-      });
-      el.addEventListener('pointerleave', () => ring.classList.remove('is-active'));
-    });
-    bind();
-  })();
-
-  /* ---------- 3. ORBIT ---------- */
+  /* ---------- 2. ORBIT ---------- */
   (() => {
     const orbit = $('#orbit');
     if (!orbit) return;
